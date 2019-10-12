@@ -104,22 +104,22 @@ public class OsirisClient {
                         break;
 
                 case '2':
-                    /*apdu.command[Apdu.INS] = Jcardclient.INS_INCREMENTER_COMPTEUR;
+                    apdu.command[Apdu.INS] = OsirisClient.INS_SET_DATA;
+                    byte[] data = "uid|name|birth".getBytes();
+                   
+                    apdu.setDataIn(data);
                     cad.exchangeApdu(apdu);
                     if (apdu.getStatus() != 0x9000) {
-                            System.out.println("Erreur : status word different de 0x9000");
+                        System.out.println("An error occurred with status: " + apdu.getStatus());
                     } else {
-                            System.out.println("OK");
-                    }*/
+                        System.out.println("OK");
+                    }
                     break;
                 case '3':
                     System.out.println("OK");
                 break;
                     case '4':
-                        /* apdu.command[Apdu.INS] = Jcardclient.INS_INITIALISER_COMPTEUR;
-                        byte[] donnees = new byte[1];
-                        donnees[0] = 0;
-                        apdu.setDataIn(donnees);
+                        /*apdu.command[Apdu.INS] = Jcardclient.INS_INCREMENTER_COMPTEUR;
                         cad.exchangeApdu(apdu);
                         if (apdu.getStatus() != 0x9000) {
                                 System.out.println("Erreur : status word different de 0x9000");
