@@ -22,6 +22,8 @@ public class OsirisClient {
     public static final byte INS_SET_NAME = 0x02;
     public static final byte INS_SET_BIRTHDATE = 0x03;
     public static final byte INS_RESET_DATA = 0x04;
+    private final static byte INS_PIN_AUTH = (byte) 0x05;
+    private final static byte INS_PIN_UNBLOCK = (byte) 0x06;
     
     /**
      * @param args the command line arguments
@@ -62,7 +64,7 @@ public class OsirisClient {
         apdu.setDataIn(appletAID);
         cad.exchangeApdu(apdu);
         if (apdu.getStatus() != 0x9000) {
-            System.out.println("Error while selecting the applet");
+            System.out.println("Error while selecting the applet: " + apdu.getStatus());
             System.exit(1);
         }
 			
@@ -73,67 +75,81 @@ public class OsirisClient {
             System.out.println("ORISIS CLIENT");
             System.out.println("----------------------------");
             System.out.println();
-            System.out.println("1 - GET DATA");
-            System.out.println("2 - SET DATA");
-            System.out.println("3 - SET NAME");
-            System.out.println("4 - SET BIRTH DATE");
-            System.out.println("5 - RESET");
-            System.out.println("6 - QUIT");
+            System.out.println("1 - AUTHENTICATE");
+            System.out.println("2 - GET DATA");
+            System.out.println("3 - SET DATA");
+            System.out.println("4 - SET NAME");
+            System.out.println("5 - SET BIRTH DATE");
+            System.out.println("6 - RESET");
+            System.out.println("7 - UNBLOCK");
+            System.out.println("8 - QUIT");
             System.out.println();
             System.out.println("Your choice: ");
 
             int choice = System.in.read();
-            while (!(choice >= '1' && choice <= '6')) {
+            while (!(choice >= '1' && choice <= '8')) {
                     choice = System.in.read();
             }
 
-                apdu = new Apdu();
-                apdu.command[Apdu.CLA] = OsirisClient.CLA_OSIRIS;
-                apdu.command[Apdu.P1] = 0x00;
-                apdu.command[Apdu.P2] = 0x00;
+            apdu = new Apdu();
+            apdu.command[Apdu.CLA] = OsirisClient.CLA_OSIRIS;
+            apdu.command[Apdu.P1] = 0x00;
+            apdu.command[Apdu.P2] = 0x00;
 
-                switch (choice) {
-                    case '1':
-                        apdu.command[Apdu.INS] = OsirisClient.INS_GET_DATA;
-                        cad.exchangeApdu(apdu);
-                        
-                        if (apdu.getStatus() != 0x9000) {
-                            System.out.println("An error occurred with status: " + apdu.getStatus());
-                        } else {
-                            System.out.print("Data : " + Utils.byteArrayToString(apdu.dataOut));
-                        }
-                        break;
+            switch (choice) {
+                case '1':
+                    apdu.command[Apdu.INS] = OsirisClient.INS_PIN_AUTH;
+                    byte[] pinCode = "1234".getBytes();
 
+                    apdu.setDataIn(pinCode);
+                    cad.exchangeApdu(apdu);
+                    handleResponse(apdu);
+                    break;
                 case '2':
+                    apdu.command[Apdu.INS] = OsirisClient.INS_GET_DATA;
+                    cad.exchangeApdu(apdu);
+
+                    if (apdu.getStatus() != 0x9000) {
+                        System.out.println("An error occurred with status: " + apdu.getStatus());
+                    } else {
+                        System.out.print("Data : " + Utils.byteArrayToString(apdu.dataOut));
+                    }
+                    break;
+                case '3':
                     apdu.command[Apdu.INS] = OsirisClient.INS_SET_DATA;
                     byte[] data = "uid|name|birth".getBytes();
-                   
+
                     apdu.setDataIn(data);
                     cad.exchangeApdu(apdu);
                     handleResponse(apdu);
                     break;
-                case '3':
+                case '4':
                     apdu.command[Apdu.INS] = OsirisClient.INS_SET_NAME;
                     byte[] nameData = "tericcabrel".getBytes();
-                   
+
                     apdu.setDataIn(nameData);
-                    cad.exchangeApdu(apdu);
-                    handleResponse(apdu);
-                break;
-                case '4':
-                    apdu.command[Apdu.INS] = OsirisClient.INS_SET_BIRTHDATE;
-                    byte[] birthData = "5991-30-14".getBytes();
-                   
-                    apdu.setDataIn(birthData);
                     cad.exchangeApdu(apdu);
                     handleResponse(apdu);
                     break;
                 case '5':
-                    apdu.command[Apdu.INS] = OsirisClient.INS_RESET_DATA;
+                    apdu.command[Apdu.INS] = OsirisClient.INS_SET_BIRTHDATE;
+                    byte[] birthData = "5991-30-14".getBytes();
+
+                    apdu.setDataIn(birthData);
                     cad.exchangeApdu(apdu);
                     handleResponse(apdu);
                     break;
                 case '6':
+                    apdu.command[Apdu.INS] = OsirisClient.INS_RESET_DATA;
+                    cad.exchangeApdu(apdu);
+                    handleResponse(apdu);
+                    break;
+                case '7':
+                    apdu.command[Apdu.INS] = OsirisClient.INS_PIN_UNBLOCK;
+                    cad.exchangeApdu(apdu);
+                    handleResponse(apdu);
+                    break;
+                case '8':
                         end = true;
                     break;
             }
