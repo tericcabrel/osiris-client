@@ -96,6 +96,7 @@ public class OsirisClient {
                     case '1':
                         apdu.command[Apdu.INS] = OsirisClient.INS_GET_DATA;
                         cad.exchangeApdu(apdu);
+                        
                         if (apdu.getStatus() != 0x9000) {
                             System.out.println("An error occurred with status: " + apdu.getStatus());
                         } else {
@@ -109,26 +110,28 @@ public class OsirisClient {
                    
                     apdu.setDataIn(data);
                     cad.exchangeApdu(apdu);
-                    if (apdu.getStatus() != 0x9000) {
-                        System.out.println("An error occurred with status: " + apdu.getStatus());
-                    } else {
-                        System.out.println("OK");
-                    }
+                    handleResponse(apdu);
                     break;
                 case '3':
-                    System.out.println("OK");
+                    apdu.command[Apdu.INS] = OsirisClient.INS_SET_NAME;
+                    byte[] nameData = "tericcabrel".getBytes();
+                   
+                    apdu.setDataIn(nameData);
+                    cad.exchangeApdu(apdu);
+                    handleResponse(apdu);
                 break;
-                    case '4':
-                        /*apdu.command[Apdu.INS] = Jcardclient.INS_INCREMENTER_COMPTEUR;
-                        cad.exchangeApdu(apdu);
-                        if (apdu.getStatus() != 0x9000) {
-                                System.out.println("Erreur : status word different de 0x9000");
-                        } else {
-                                System.out.println("OK");
-                        }*/
+                case '4':
+                    apdu.command[Apdu.INS] = OsirisClient.INS_SET_BIRTHDATE;
+                    byte[] birthData = "5991-30-14".getBytes();
+                   
+                    apdu.setDataIn(birthData);
+                    cad.exchangeApdu(apdu);
+                    handleResponse(apdu);
                     break;
                 case '5':
-                        System.out.print("OK");
+                    apdu.command[Apdu.INS] = OsirisClient.INS_RESET_DATA;
+                    cad.exchangeApdu(apdu);
+                    handleResponse(apdu);
                     break;
                 case '6':
                         end = true;
@@ -142,5 +145,13 @@ public class OsirisClient {
         } catch (CadTransportException | IOException e) {
             System.out.println("Error sending powerDown command to Java Card");
         }		
+    }
+    
+    public static void handleResponse(Apdu apdu) {
+        if (apdu.getStatus() != 0x9000) {
+            System.out.println("An error occurred with status: " + apdu.getStatus());
+        } else {
+            System.out.println("OK");
+        }
     }
 }
