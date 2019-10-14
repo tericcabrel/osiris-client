@@ -99,8 +99,8 @@ public class OsirisClient {
             switch (choice) {
                 case '1':
                     apdu.command[Apdu.INS] = OsirisClient.INS_PIN_AUTH;
-                    byte[] pinCode = "1234".getBytes();
-
+                    byte[] pinCode = Utils.numberStringToByteArray("123456");
+                    
                     apdu.setDataIn(pinCode);
                     cad.exchangeApdu(apdu);
                     handleResponse(apdu);
