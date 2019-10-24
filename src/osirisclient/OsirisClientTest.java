@@ -16,7 +16,7 @@ import java.util.Scanner;
  *
  * @author ZEGEEK
  */
-public class OsirisClient {
+public class OsirisClientTest {
     
     /* Constants */
     public static final byte CLA_OSIRIS = (byte) 0x3A;
@@ -40,21 +40,6 @@ public class OsirisClient {
         // Connect to Java Card
         CadT1Client cad;
         Socket sckCarte;
-        
-        //byte by =  (byte)0x27e;
-        //System.out.println(by);
-        //System.out.println((short) (by & 0xFF));
-        
-        /*byte[] cent = Utils.prepareNumberForApdu(638);
-        byte[] mille = Utils.prepareNumberForApdu(5437);
-        for(byte b : cent) {
-            System.out.print(b);
-        }
-        System.out.println();
-        for(byte b : mille) {
-            System.out.print(b);
-        }
-        System.out.println();*/
         try {
             sckCarte = new Socket("localhost", 9025);
             sckCarte.setTcpNoDelay(true);
@@ -118,13 +103,13 @@ public class OsirisClient {
             }
 
             apdu = new Apdu();
-            apdu.command[Apdu.CLA] = OsirisClient.CLA_OSIRIS;
+            apdu.command[Apdu.CLA] = OsirisClientTest.CLA_OSIRIS;
             apdu.command[Apdu.P1] = 0x00;
             apdu.command[Apdu.P2] = 0x00;
 
             switch (Integer.valueOf(choice)) {
                 case 1:
-                    apdu.command[Apdu.INS] = OsirisClient.INS_PIN_AUTH;
+                    apdu.command[Apdu.INS] = OsirisClientTest.INS_PIN_AUTH;
                     byte[] pinCode = Utils.numberStringToByteArray("123456");
                     
                     apdu.setDataIn(pinCode);
@@ -132,7 +117,7 @@ public class OsirisClient {
                     handleResponse(apdu);
                     break;
                 case 2:
-                    apdu.command[Apdu.INS] = OsirisClient.INS_GET_DATA;
+                    apdu.command[Apdu.INS] = OsirisClientTest.INS_GET_DATA;
                     cad.exchangeApdu(apdu);
 
                     if (apdu.getStatus() != 0x9000) {
@@ -142,7 +127,7 @@ public class OsirisClient {
                     }
                     break;
                 case 3:
-                    apdu.command[Apdu.INS] = OsirisClient.INS_SET_DATA;
+                    apdu.command[Apdu.INS] = OsirisClientTest.INS_SET_DATA;
                     byte[] data = "uid|name|birth".getBytes();
 
                     apdu.setDataIn(data);
@@ -150,7 +135,7 @@ public class OsirisClient {
                     handleResponse(apdu);
                     break;
                 case 4:
-                    apdu.command[Apdu.INS] = OsirisClient.INS_SET_NAME;
+                    apdu.command[Apdu.INS] = OsirisClientTest.INS_SET_NAME;
                     byte[] nameData = "tericcabrel".getBytes();
 
                     apdu.setDataIn(nameData);
@@ -158,7 +143,7 @@ public class OsirisClient {
                     handleResponse(apdu);
                     break;
                 case 5:
-                    apdu.command[Apdu.INS] = OsirisClient.INS_SET_BIRTHDATE;
+                    apdu.command[Apdu.INS] = OsirisClientTest.INS_SET_BIRTHDATE;
                     byte[] birthData = "5991-30-14".getBytes();
 
                     apdu.setDataIn(birthData);
@@ -166,46 +151,47 @@ public class OsirisClient {
                     handleResponse(apdu);
                     break;
                 case 6:
-                    apdu.command[Apdu.INS] = OsirisClient.INS_RESET_DATA;
+                    apdu.command[Apdu.INS] = OsirisClientTest.INS_RESET_DATA;
                     cad.exchangeApdu(apdu);
                     handleResponse(apdu);
                     break;
                 case 7:
-                    apdu.command[Apdu.INS] = OsirisClient.INS_PIN_UNBLOCK;
+                    apdu.command[Apdu.INS] = OsirisClientTest.INS_PIN_UNBLOCK;
                     cad.exchangeApdu(apdu);
                     handleResponse(apdu);
                     break;
                 case 8:
-                    byte[] fingerData = fileToByteArray("D:\\Card\\tecoright-two.dat");
+                    byte[] fingerData = fileToByteArray("D:\\Card\\tecoright.dat");
                     byte[] Data = new byte[100];
 
-                    // System.out.println("Finger Length: " + fingerData.length);
+                    System.out.println("Finger Length: " + fingerData.length);
 
                     int fingerLength = fingerData.length;
                     double round = Math.floor((double)fingerLength / 100);
                     int lastPart = fingerLength % 100;
 
-                    // System.out.println("Round : " + round);
-                    // System.out.println("Last Part : " + lastPart);
+                    System.out.println("Round : " + round);
+                    System.out.println("Last Part : " + lastPart);
 
                     byte[] dest = new byte[fingerLength];
 
-                    byte[] lengthToByte = Utils.prepareNumberForApdu(fingerLength);
+                    double partToSend = lastPart == 0 ? round : round + 1;
                     
-                    apdu.command[Apdu.INS] = OsirisClient.INS_SET_FINGERPRINT;
+                    byte[] toByte = new byte[] { (byte) fingerLength, 0x00, (byte) partToSend };
+                    
+                    apdu.command[Apdu.INS] = OsirisClientTest.INS_SET_FINGERPRINT;
                     apdu.command[Apdu.P1] = 0x00;
                     apdu.command[Apdu.P2] = 0x00;
                     
-                    apdu.setDataIn(lengthToByte);
-                    
+                    apdu.setDataIn(toByte);
                     cad.exchangeApdu(apdu);
                     handleResponse(apdu);
                     
                     boolean allPartSend = true;
                     for (int i = 0; i < round; i++) {
-                        // Array copy: (src, offset, target, offset, copy size)
+                        //array copy: (src, offset, target, offset, copy size)
                         System.arraycopy(fingerData, (i * 100), Data, 0, 100);
-                        // System.out.println("Data Length: " + Data.length);
+                        System.out.println("Data Length: " + Data.length);
                         System.arraycopy(Data, 0, dest, (i * 100), 100);
                         
                         apdu.command[Apdu.P1] = (byte) i;
@@ -245,21 +231,24 @@ public class OsirisClient {
                     byte[] fake = new byte[fingerLength];
                     System.arraycopy(fingerData, 0, fake, 0, fingerLength);
 
-                    // System.out.println("Dest Length : " + dest.length);
-                    // System.out.println("Array equals : " + Arrays.equals(fingerData, dest));
-                    // System.out.println("Array equals : " + Arrays.equals(fingerData, fake));
+                    System.out.println("Dest Length : " + dest.length);
+                    System.out.println("Array equals : " + Arrays.equals(fingerData, dest));
+                    System.out.println("Array equals : " + Arrays.equals(fingerData, fake));
+                    // response = card.getBasicChannel().transmit(new CommandAPDU(CLA_OSIRIS, INS_FINGERPRINT, 0x00, 0x00, Data, 0, Data.length));
+
+                    //handleResponse(response);
                     break;
                 case 9:
-                    int fpLength = 744;
+                    int fpLength = 638;
                     byte[] res = new byte[fpLength];
                     double rnd = Math.floor((double)fpLength / 100);
-                    int last = fpLength % 100;
+                    int last = fpLength % 100, readLength = 0;
                     
                     boolean allSend = true;
                     
                     for(int i = 0; i < rnd; i++) {
-                        apdu.command[Apdu.INS] = OsirisClient.INS_GET_FINGERPRINT;
-                        apdu.command[Apdu.P1] = (byte) i;
+                        apdu.command[Apdu.INS] = OsirisClientTest.INS_GET_FINGERPRINT;
+                        apdu.command[Apdu.P1] = (byte) (i * 100);
                         apdu.command[Apdu.P2] = 0x64;
                         
                         cad.exchangeApdu(apdu);
@@ -267,29 +256,41 @@ public class OsirisClient {
                         if (apdu.getStatus() != 0x9000) {
                             System.out.println("An error occurred with status: " + apdu.getStatus());
                         } else {
-                            // Array copy: (src, offset, target, offset, copy size)
-                            System.arraycopy(apdu.dataOut, 0, res, (i * 100), apdu.dataOut.length);
+                            readLength += apdu.dataOut.length;
+                            // System.out.println("Datalength : " + apdu.dataOut.length);
+                            // System.out.println("Data : " + Utils.byteArrayToString(apdu.dataOut));
+                            //array copy: (src, offset, target, offset, copy size)
+                            System.arraycopy(apdu.dataOut, 0, res, (i*100), apdu.dataOut.length);
                         }
                     }
                     
                     if(allSend) {
-                        apdu.command[Apdu.INS] = OsirisClient.INS_GET_FINGERPRINT;
-                        apdu.command[Apdu.P1] = (byte) ((int)rnd);
+                        apdu.command[Apdu.INS] = OsirisClientTest.INS_GET_FINGERPRINT;
+                        apdu.command[Apdu.P1] = (byte) ((int)rnd * 100);
                         apdu.command[Apdu.P2] = (byte) last;
                         cad.exchangeApdu(apdu);
                         if (apdu.getStatus() != 0x9000) {
                             System.out.println("An error occurred with status: " + apdu.getStatus());
                             break;
                         } else {
+                            readLength += apdu.dataOut.length;
                             //array copy: (src, offset, target, offset, copy size)
                             System.arraycopy(apdu.dataOut, 0, res, (int)(rnd * 100 ), apdu.dataOut.length);
+                            // System.out.println("Data : " + Utils.byteArrayToString(apdu.dataOut));
+                            //System.out.println("OK");
                         }
                     } else {
                         System.out.println("Fail to get all the part");
                     }
-                    byte[] fgData = fileToByteArray("D:\\Card\\tecoright-two.dat");
-                    // System.out.println("ReadLength : " + readLength);
+                    byte[] fgData = fileToByteArray("D:\\Card\\tecoright.dat");
+                    System.out.println("ReadLength : " + readLength);
                     System.out.println("Array equals : " + Arrays.equals(fgData, res));
+                    
+                    for(int i = 0; i < fgData.length; i++) {
+                        if (res[i] != fgData[i]) {
+                            System.out.println(i +": " + fgData[i] + " === " + res[i]);
+                        }
+                    }
                     break;
                 case 10:
                         end = true;
