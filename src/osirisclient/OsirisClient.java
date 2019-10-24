@@ -41,20 +41,6 @@ public class OsirisClient {
         CadT1Client cad;
         Socket sckCarte;
         
-        //byte by =  (byte)0x27e;
-        //System.out.println(by);
-        //System.out.println((short) (by & 0xFF));
-        
-        /*byte[] cent = Utils.prepareNumberForApdu(638);
-        byte[] mille = Utils.prepareNumberForApdu(5437);
-        for(byte b : cent) {
-            System.out.print(b);
-        }
-        System.out.println();
-        for(byte b : mille) {
-            System.out.print(b);
-        }
-        System.out.println();*/
         try {
             sckCarte = new Socket("localhost", 9025);
             sckCarte.setTcpNoDelay(true);
@@ -250,7 +236,7 @@ public class OsirisClient {
                     // System.out.println("Array equals : " + Arrays.equals(fingerData, fake));
                     break;
                 case 9:
-                    int fpLength = 744;
+                    int fpLength = 553;
                     byte[] res = new byte[fpLength];
                     double rnd = Math.floor((double)fpLength / 100);
                     int last = fpLength % 100;

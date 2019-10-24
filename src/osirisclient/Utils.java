@@ -6,11 +6,14 @@ package osirisclient;
  */
 public class Utils {
     public static String byteArrayToString(byte[] byteArray) {
+        short n = (short) (((byteArray[byteArray.length - 2] << 8)) | ((byteArray[byteArray.length - 1] & 0xff)));
+        
         StringBuffer hexStringBuffer = new StringBuffer();
-        for (int i = 0; i < byteArray.length; i++) {
+        for (int i = 0; i < byteArray.length - 2; i++) {
             hexStringBuffer.append((char) byteArray[i]);
         }
-        return hexStringBuffer.toString();
+        
+        return hexStringBuffer.toString() + String.valueOf(n);
     }
     
     public static byte[] numberStringToByteArray(String str) {
